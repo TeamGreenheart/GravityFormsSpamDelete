@@ -96,7 +96,7 @@ function gf_spam_cleaner_delete_matching_entries($config) {
 
     $deleted_count = 0;
     $debug_info = [];
-    $batch_size = 2000; // I had to do huge batches to get all my spam because of partial entries
+    $batch_size = 20000; // I had to do huge batches to get all my spam because of partial entries
     $max_deletions_per_run = 1000;
     $batches_processed = 0;
     $max_batches = 50; // Don't process forever
