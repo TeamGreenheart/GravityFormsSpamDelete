@@ -272,30 +272,6 @@ function show_test_import_logic(){
             </div>
         <?php endif; ?>
     </div>
-
-    <script>
-        document.getElementById('add-criteria').addEventListener('click', function () {
-            const table = document.querySelector('#criteria-table tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><input name="field_id[]" /></td>
-                <td><input name="match_value[]" /></td>
-                <td><button type="button" class="remove-row button">×</button></td>
-            `;
-            table.appendChild(row);
-            
-            // Add event listener to new remove button
-            row.querySelector('.remove-row').addEventListener('click', function () {
-                this.closest('tr').remove();
-            });
-        });
-
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-row')) {
-                e.target.closest('tr').remove();
-            }
-        });
-    </script>
 <?php
 }
 
@@ -472,12 +448,34 @@ function gf_spam_cleaner_page() {
         </form>
 
    
-    <?php
-    if ($SHOW_TEST_IMPORT_LOGIC) {
-        show_test_import_logic();
-    }
+        <?php
+        if ($SHOW_TEST_IMPORT_LOGIC) {
+            show_test_import_logic();
+        }
+        ?>
+        <script>
+            document.getElementById('add-criteria').addEventListener('click', function () {
+                const table = document.querySelector('#criteria-table tbody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input name="field_id[]" /></td>
+                    <td><input name="match_value[]" /></td>
+                    <td><button type="button" class="remove-row button">×</button></td>
+                `;
+                table.appendChild(row);
+                
+                // Add event listener to new remove button
+                row.querySelector('.remove-row').addEventListener('click', function () {
+                    this.closest('tr').remove();
+                });
+            });
 
-    ?>
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-row')) {
+                    e.target.closest('tr').remove();
+                }
+            });
+        </script>
     </div>
     <?php
 }
