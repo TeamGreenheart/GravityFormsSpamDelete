@@ -7,6 +7,7 @@
  */
 
 $SHOW_TEST_IMPORT_LOGIC = false; // Set to false in production
+$IS_DEBUG = false; // Set to true for debugging
 
 add_action('admin_menu', function () {
     add_submenu_page(
@@ -128,9 +129,9 @@ function gf_spam_cleaner_delete_matching_entries($config) {
             if (!is_wp_error($result)) {
                 $deleted_count++;
                 $batch_deletions++;
-                $debug_info[] = "✓ Deleted entry {$entry['id']}";
+                if($IS_DEBUG) $debug_info[] = "✓ Deleted entry {$entry['id']}";
             } else {
-                $debug_info[] = "✗ Failed to delete entry {$entry['id']}: " . $result->get_error_message();
+                if($IS_DEBUG) $debug_info[] = "✗ Failed to delete entry {$entry['id']}: " . $result->get_error_message();
             }
             
             // Break after a few deletions to get fresh batch
