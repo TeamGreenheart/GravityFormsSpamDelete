@@ -96,7 +96,7 @@ function gf_spam_cleaner_delete_matching_entries($config) {
 
     $deleted_count = 0;
     $debug_info = [];
-    $batch_size = 10000; // I had to do huge batches to get all my spam because of partial entries
+    $batch_size = 1000; // I had to do huge batches to get all my spam because of partial entries
     $max_deletions_per_run = 1000;
     $batches_processed = 0;
     $max_batches = 50; // Don't process forever
@@ -106,7 +106,7 @@ function gf_spam_cleaner_delete_matching_entries($config) {
             $config['form_id'], 
             ['status' => 'active'], 
             null, 
-            ['page_size' => $batch_size, 'offset' => 0] // Always offset 0 since we're deleting
+            ['page_size' => $batch_size, 'offset' => $batches_processed] 
         );
         
         if (empty($entries)) {
@@ -117,37 +117,32 @@ function gf_spam_cleaner_delete_matching_entries($config) {
         $batch_deletions = 0;
         $debug_info[] = "Batch {$batches_processed}: Processing " . count($entries) . " entries";
         
+        $Flagged = [];
         foreach ($entries as $entry) {
             if (gf_spam_cleaner_entry_matches($entry, $config['criteria'], $config['logic'])) {
-                $result = GFAPI::delete_entry($entry['id']);
-                if (!is_wp_error($result)) {
-                    $deleted_count++;
-                    $batch_deletions++;
-                    $debug_info[] = "✓ Deleted entry {$entry['id']}";
-                } else {
-                    $debug_info[] = "✗ Failed to delete entry {$entry['id']}: " . $result->get_error_message();
-                }
-                
-                // Break after a few deletions to get fresh batch
-                if ($batch_deletions >= 5) {
-                    break;
-                }
+                $Flagged[] = $entry;
             }
+        }
+        foreach ($Flagged as $entry) {
+            $result = GFAPI::delete_entry($entry['id']);
+            if (!is_wp_error($result)) {
+                $deleted_count++;
+                $batch_deletions++;
+                $debug_info[] = "✓ Deleted entry {$entry['id']}";
+            } else {
+                $debug_info[] = "✗ Failed to delete entry {$entry['id']}: " . $result->get_error_message();
+            }
+            
+            // Break after a few deletions to get fresh batch
+            if ($batch_deletions >= 10) {
+                break;
+            }
+            
         }
         
         $debug_info[] = "Batch {$batches_processed}: Deleted {$batch_deletions} entries";
         $batches_processed++;
-        
-        // If we didn't delete anything AND we processed all entries in the batch,
-        // we can skip ahead by moving the offset
-        if ($batch_deletions === 0 && count($entries) === $batch_size) {
-            // No matches in this batch, but there might be more entries
-            // We need to keep checking but avoid infinite loop
-            if ($batches_processed > 50) {
-                $debug_info[] = "No matches found in recent batches, stopping to avoid timeout";
-                break;
-            }
-        }
+
     }
     
     return ['count' => $deleted_count, 'debug' => $debug_info];
